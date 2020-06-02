@@ -6,15 +6,11 @@ import (
 )
 
 func main() {
-	err := lex.Init("test/lex.lua")
-	if err != nil {
-		log.Fatalf("failed to initialize lex: %s", err.Error())
-	}
-
+	l := lex.NewLexer("test/lex.lua")
 	for {
-		tk, err := lex.NextToken()
+		tk, err := l.NextToken()
 		if err != nil {
-			log.Fatalf("failed to parse token: %s", err.Error())
+			log.Fatalln(err)
 		}
 		log.Println(tk)
 	}

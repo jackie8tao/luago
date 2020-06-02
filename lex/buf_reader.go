@@ -39,17 +39,16 @@ func NewBufReader(fl string) *BufReader {
 
 // 从文件流中读取内容进入缓冲区
 func (b *BufReader) read2Buf() {
-	buf := make([]rune, 0, cReadLen)
+	buf := make([]rune, cReadLen)
 	for i := 0; i < cReadLen; i++ {
 		c, _, err := b.rdr.ReadRune()
-		if err != nil && err != io.EOF {
+		if err != nil {
 			if err == io.EOF {
 				buf[i] = cEOF
 				break
 			}
 			panic(err)
 		}
-
 		buf[i] = c
 	}
 
