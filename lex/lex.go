@@ -1,106 +1,50 @@
 package lex
 
-import (
-	"bufio"
-	"io"
-	"os"
-)
-
-var gTkRdr *bufio.Reader
-
-// Init set the file
-func Init(file string) error {
-	fp, err := os.Open(file)
-	if err != nil {
-		return err
-	}
-	gTkRdr = bufio.NewReader(fp)
-	return nil
+// Lexer 词法分析对象
+type Lexer struct {
+	file     string
+	rdr      *BufReader
+	curToken Token
+	cache    []rune
 }
 
-// NextToken get the next token from stream
-func NextToken() (tk Token, err error) {
-	cache := make([]rune, 0)
-
-	var c rune
-	state := 0
-	for {
-		c, err = getChar()
-		if err != nil {
-			return
-		}
-
-		switch state {
-		case 0:
-			switch c {
-			case 'l':
-				state = 1
-			case 'i':
-				state = 5
-			default:
-				err = InvalidCharacter
-				return
-			}
-			cache = append(cache, c)
-		case 1:
-			switch c {
-			case 'o':
-				state = 2
-			default:
-				err = InvalidCharacter
-				return
-			}
-			cache = append(cache, c)
-		case 2:
-			switch c {
-			case 'c':
-				state = 3
-			default:
-				err = InvalidCharacter
-				return
-			}
-			cache = append(cache, c)
-		case 3:
-			switch c {
-			case 'a':
-				state = 4
-			default:
-				err = InvalidCharacter
-				return
-			}
-			cache = append(cache, c)
-		case 4:
-			switch c {
-			case 'l':
-				state = 99
-			default:
-				err = InvalidCharacter
-				return
-			}
-			cache = append(cache, c)
-		case 5:
-			switch c {
-			case 'f':
-				state = 99
-			default:
-				err = InvalidCharacter
-				return
-			}
-			cache = append(cache, c)
-		case 99:
-			tk.Val = string(cache)
-			return
-		}
+// NewLexer 新建词法分析对象
+func NewLexer(fl string) *Lexer {
+	return &Lexer{
+		file:     fl,
+		rdr:      NewBufReader(fl),
+		curToken: Token{},
+		cache:    []rune{},
 	}
 }
 
-func getChar() (rune, error) {
-	c, _, err := gTkRdr.ReadRune()
-	if err != nil {
-		if err != io.EOF {
-			return rune(0), err
-		}
-		return '$', nil
+// 解析标识符，其中包括关键字
+func (l *Lexer) parseIdentical() {
+
+}
+
+// 解析出数字
+func (l *Lexer) parseNumber() {
+
+}
+
+// 解析出注释
+func (l *Lexer) parseComment() {
+
+}
+
+// NextToken 从字符串中解析出下一个token
+func (l *Lexer) NextToken() {
+	c := l.rdr.ReadChar()
+	switch c {
+	case '~':
+	default: // 标识符和关键字
+
 	}
-	return c, nil
+}
+
+// Reset 重置为新的文件
+func (l *Lexer) Reset(fl string) {
+	l.file = fl
+	l.rdr = NewBufReader(fl)
 }
