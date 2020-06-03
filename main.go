@@ -10,7 +10,11 @@ func main() {
 	for {
 		tk, err := l.NextToken()
 		if err != nil {
-			log.Fatalln(err)
+			if err != lex.ErrEOF {
+				log.Fatalln(err)
+			}
+			log.Println(tk)
+			break
 		}
 		log.Println(tk)
 	}

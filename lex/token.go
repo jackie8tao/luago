@@ -23,11 +23,32 @@ const (
 	TkTrue              // true
 	TkUntil             // until
 	TkWhile             // while
+	TkName              // identical
 )
 
 // 符号记录
 var gTokens = map[string]int{
-	"and": TkAnd,
+	"and":      TkAnd,
+	"break":    TkBreak,
+	"do":       TkDo,
+	"else":     TkElse,
+	"elseif":   TkElseif,
+	"end":      TkEnd,
+	"false":    TkFalse,
+	"for":      TkFor,
+	"function": TkFunc,
+	"if":       TkIf,
+	"in":       TkIn,
+	"local":    TkLocal,
+	"nil":      TkNil,
+	"not":      TkNot,
+	"or":       TkOr,
+	"repeat":   TkRepeat,
+	"return":   TkRet,
+	"then":     TkThen,
+	"true":     TkTrue,
+	"until":    TkUntil,
+	"while":    TkWhile,
 }
 
 type Token struct {
