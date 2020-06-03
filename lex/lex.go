@@ -30,7 +30,7 @@ func (l *Lexer) parseIdentical() error {
 	for {
 		l.curCh = l.rdr.ReadChar()
 		switch l.curCh {
-		case 'l', 'i', 'f', 'o', 'c', 'a':
+		case l.curCh:
 			l.cache = append(l.cache, l.curCh)
 		default:
 			switch l.curCh {
@@ -52,6 +52,14 @@ func (l *Lexer) parseIdentical() error {
 	}
 }
 
+// 判断是否是有效英文字母
+func isAlpha(c rune) bool {
+	if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') {
+		return true
+	}
+	return false
+}
+
 // NextToken 从字符串中解析出下一个token
 func (l *Lexer) NextToken() (tk Token, err error) {
 	l.curCh = l.rdr.ReadChar()
@@ -61,6 +69,7 @@ func (l *Lexer) NextToken() (tk Token, err error) {
 			err = errors.New("finish")
 			return
 		}
+
 		err = l.parseIdentical()
 		if err != nil {
 			panic(err)

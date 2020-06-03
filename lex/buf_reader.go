@@ -67,7 +67,7 @@ func (b *BufReader) ReadChar() rune {
 	return c
 }
 
-// Rollback 回退
+// Rollback 回退一个字符
 func (b *BufReader) Rollback() {
 	if b.pos <= 0 {
 		panic(errors.New("failed to rollback at the beginning of file"))
