@@ -2,20 +2,22 @@ package lex
 
 // Lexer 词法分析对象
 type Lexer struct {
-	file     string
-	rdr      *BufReader
-	curToken Token
-	cache    []rune
-	line     uint32
+	curChar    rune
+	lineNumber uint32
+	lastLine   uint32
+	curToken   Token
+	file       string
+	reader     *BufReader
+	cache      []rune
+	err        error
 }
 
 // NewLexer 新建词法分析对象
-func NewLexer(fl string) *Lexer {
+func NewLexer(file string) *Lexer {
 	return &Lexer{
-		file:     fl,
-		rdr:      NewBufReader(fl),
-		curToken: Token{},
-		cache:    []rune{},
+		file: file,
+
+		cache: []rune{},
 	}
 }
 
@@ -58,62 +60,7 @@ func (l *Lexer) clear() {
 	l.cache = make([]rune, 0)
 }
 
-// 解析标识符，其中包括关键字
-func (l *Lexer) parseIdentical() error {
-	setCurToken := func() {
-		val := string(l.cache)
-		l.curToken.Val = val
-		if tag, ok := gTokens[val]; ok {
-			l.curToken.Tag = tag
-			return
-		}
-		l.curToken.Tag = TkName
-	}
-
-	for {
-		c := l.rdr.ReadChar()
-		switch {
-		case isAlpha(c): // 标识符允许的字符
-			l.save(c)
-		case isWhiteSpace(c): // 标识符后面肯定是用空格分隔
-			setCurToken()
-			return nil
-		case isEOF(c):
-			setCurToken()
-			return ErrEOF
-		default:
-			return ErrUnExpectedChar
-		}
-	}
-}
-
-// NextToken 从字符串中解析出下一个token
-func (l *Lexer) NextToken() (tk Token, err error) {
-	c := l.rdr.ReadChar()
-	switch c {
-	case rune(0x0D):
-		l.line++
-	case '=':
-
-	default: // 标识符或关键字
-		if isAlpha(c) {
-			l.save(c)
-			err = l.parseIdentical()
-			break
-		}
-	}
-
-	if err != nil && err != ErrEOF {
-		return
-	}
-
-	tk = l.curToken
-	l.clear()
-	return
-}
-
 // Reset 重置为新的文件
 func (l *Lexer) Reset(fl string) {
 	l.file = fl
-	l.rdr = NewBufReader(fl)
 }
