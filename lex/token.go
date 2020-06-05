@@ -45,7 +45,7 @@ const (
 	TkColon                // :
 	TkSemicolon            // ;
 	TkComma                // ,
-	TkTake                 // .
+	TkDots                 // .
 	TkStrCan               // ..
 	TkAny                  // ...
 )
