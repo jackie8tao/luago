@@ -2,56 +2,61 @@ package lex
 
 // 关键字和其它符号标记
 const (
-	TkAnd       = iota + 1 // and
-	TkBreak                // break
-	TkDo                   // do
-	TkElse                 // else
-	TkElseif               // elseif
-	TkEnd                  // end
-	TkFalse                // false
-	TkFor                  // for
-	TkFunc                 // function
-	TkIf                   // if
-	TkIn                   // in
-	TkLocal                // local
-	TkNil                  // nil
-	TkNot                  // not
-	TkOr                   // or
-	TkRepeat               // repeat
-	TkRet                  // return
-	TkThen                 // then
-	TkTrue                 // true
-	TkUntil                // until
-	TkWhile                // while
-	TkName                 // identifiers
-	TkPlus                 // +
-	TkMinus                // -
-	TkMul                  // *
-	TkDiv                  // /
-	TkFac                  // ^
-	TkAssign               // =
-	TkNotEq                // ~=
-	TkLeq                  // <=
-	TkGeq                  // >=
-	TkLt                   // <
-	TkGt                   // >
-	TkEq                   // ==
-	TkLftParen             // (
-	TkRgtParen             // )
-	TkLftBrkt              // [
-	TkRgtBrkt              // ]
-	TkLftBrace             // {
-	TkRgtBrace             // }
-	TkColon                // :
-	TkSemicolon            // ;
-	TkComma                // ,
-	TkDots                 // .
-	TkStrCan               // ..
-	TkAny                  // ...
+	TkAnd        = iota + 1 // and
+	TkBreak                 // break
+	TkDo                    // do
+	TkElse                  // else
+	TkElseif                // elseif
+	TkEnd                   // end
+	TkFalse                 // false
+	TkFor                   // for
+	TkFunc                  // function
+	TkIf                    // if
+	TkIn                    // in
+	TkLocal                 // local
+	TkNil                   // nil
+	TkNot                   // not
+	TkOr                    // or
+	TkRepeat                // repeat
+	TkRet                   // return
+	TkThen                  // then
+	TkTrue                  // true
+	TkUntil                 // until
+	TkWhile                 // while
+	TkName                  // identifiers
+	TkPlus                  // +
+	TkMinus                 // -
+	TkMul                   // *
+	TkDiv                   // /
+	TkFac                   // ^
+	TkAssign                // =
+	TkNotEq                 // ~=
+	TkLeq                   // <=
+	TkGeq                   // >=
+	TkLt                    // <
+	TkGt                    // >
+	TkEq                    // ==
+	TkLftParen              // (
+	TkRgtParen              // )
+	TkLftBracket            // [
+	TkRgtBracket            // ]
+	TkLftBrace              // {
+	TkRgtBrace              // }
+	TkColon                 // :
+	TkSemicolon             // ;
+	TkComma                 // ,
+	TkDot                   // .
+	TkDots                  // ...
+	TkConcat                // ..
+	TkAny                   // ...
+	TkInt                   // 整数
+	TkFlt                   // 浮点数
+	TkString                // 字符串
+	TkLftShift              // <<
 )
 
-// 符号记录
-var gTokens = map[string]int{
+// 关键字
+var gKeyWords = map[string]int{
 	"and":      TkAnd,
 	"break":    TkBreak,
 	"do":       TkDo,
@@ -75,10 +80,23 @@ var gTokens = map[string]int{
 	"while":    TkWhile,
 }
 
-// 控制字符列表
-const ()
-
+// Token token对象
 type Token struct {
 	Tag int
 	Val interface{}
+}
+
+// Float 获取浮点数
+func (t Token) Float() float64 {
+	return t.Val.(float64)
+}
+
+// String 获取字符串值
+func (t Token) String() string {
+	return t.Val.(string)
+}
+
+// Int 获取整型值
+func (t Token) Int() int64 {
+	return t.Val.(int64)
 }

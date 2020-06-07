@@ -9,8 +9,7 @@ import (
 
 // 字符相关标志
 const (
-	cEOF = rune(0)  // 文件结尾
-	cErr = rune(-1) // 文件错误
+	EOZ = rune(-1) // 文件结尾
 )
 
 // 缓存的字符长度
@@ -18,9 +17,9 @@ const cReadLen = 100
 
 // BufReader 带有缓存功能的可重置的文件流式读取
 type BufReader struct {
-	rdr *bufio.Reader
-	buf []rune
-	pos int
+	reader *bufio.Reader
+	buf    []rune
+	pos    int
 }
 
 // NewBufReader 创建文件读取对象
@@ -31,9 +30,9 @@ func NewBufReader(fl string) *BufReader {
 	}
 
 	return &BufReader{
-		rdr: bufio.NewReader(fp),
-		buf: make([]rune, 0, cReadLen*2),
-		pos: 0,
+		reader: bufio.NewReader(fp),
+		buf:    make([]rune, 0, cReadLen*2),
+		pos:    0,
 	}
 }
 
@@ -41,10 +40,10 @@ func NewBufReader(fl string) *BufReader {
 func (b *BufReader) read2Buf() {
 	buf := make([]rune, cReadLen)
 	for i := 0; i < cReadLen; i++ {
-		c, _, err := b.rdr.ReadRune()
+		c, _, err := b.reader.ReadRune()
 		if err != nil {
 			if err == io.EOF {
-				buf[i] = cEOF
+				buf[i] = EOZ
 				break
 			}
 			panic(err)

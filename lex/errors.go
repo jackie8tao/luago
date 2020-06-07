@@ -3,6 +3,12 @@ package lex
 import "errors"
 
 var (
-	ErrUnExpectedChar = errors.New("unexpected char")
-	ErrEOF            = errors.New("end of file")
+	ErrEOZ = errors.New("end of stream")
+)
+
+var (
+	errInvalidDigit     = errors.New("invalid digit character")
+	errMalformedNumber  = errors.New("malformed number")
+	errUnfinishedString = errors.New("unfinished string")
+	errUnexpectChar     = errors.New("unexpected character")
 )

@@ -2,20 +2,13 @@ package main
 
 import (
 	"log"
-	"luago/lex"
+	"strconv"
 )
 
 func main() {
-	l := lex.NewLexer("test/lex.lua")
-	for {
-		tk, err := l.NextToken()
-		if err != nil {
-			if err != lex.ErrEOF {
-				log.Fatalln(err)
-			}
-			log.Println(tk)
-			break
-		}
-		log.Println(tk)
+	val, err := strconv.ParseUint("1E-02", 10, 64)
+	if err != nil {
+		log.Println(err)
 	}
+	log.Println(val)
 }
