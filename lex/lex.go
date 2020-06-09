@@ -97,6 +97,7 @@ func (l *Lexer) readNumeral() (tk int, err error) {
 		case l.current == '.': // 小数点
 			l.saveAndNext()
 		default:
+			// TODO 数字的格式校验能力
 			val := string(l.buf)
 			_, e := strconv.ParseInt(val, 10, 64)
 			if e != nil {
@@ -200,95 +201,134 @@ func (l *Lexer) parse() (tk int, err error) {
 			l.incLineNumber()
 		case ' ', '\f', '\t', '\v': // 空格
 			l.next()
-		case '-': // '-' 或者 '--'
+		case '-': // '-', '--'
 			l.next()
-			if l.current != '-' { // ‘-’
+			if !l.checkNext([]rune{'-'}) {
 				tk = TkMinus
 				return
 			}
-			l.next()
-			if l.current == '[' {
-				l.next()
-				if l.current == '[' {
-					tk, err = l.readLongString() // 长注释
+			if l.checkNext([]rune{'['}) { // --[ 可能为长注释
+				if l.checkNext([]rune{'['}) { // 确认为长注释
+					tk, err = l.readLongString()
 					return
+				}
+				goto shortComment
+			}
+		shortComment:
+			for {
+				if l.current != '\n' && l.current != EOZ { // 非换行符，即为正常注释内容，主动忽略
+					l.next()
 				} else {
-					for { // 短注释
-						if l.current != '\n' && l.current != EOZ {
-							l.next() // 非终结符直接忽略
-						}
-					}
-				}
-			} else {
-				for { // 短注释
-					if l.current != '\n' && l.current != EOZ {
-						l.next() // 非终结符直接忽略
-					}
+					break
 				}
 			}
-		case '[': // 长字符串 或者 '['
+		case '[': // 长字符串, '['
 			l.next()
-			if l.current != '[' { // 正常左中括号
-				tk = TkLftBracket
-			} else {
-				tk, err = l.readLongString() // 长字符串
+			if !l.checkNext([]rune{'['}) {
+				tk = TkLeftBracket
+				return
 			}
+			tk, err = l.readLongString() // 长字符串
 			return
-		case '=':
+		case '(': // '('
 			l.next()
-			if !l.checkNext([]rune{'='}) { // '='
+			tk = TkLeftParen
+			return
+		case ')': // ')'
+			l.next()
+			tk = TkRightParen
+			return
+		case '{': // '{'
+			l.next()
+			tk = TkLeftBrace
+			return
+		case '}': // '}'
+			l.next()
+			tk = TkRigttBrace
+			return
+		case '+': // '+'
+			l.next()
+			tk = TkPlus
+			return
+		case '*': // '*'
+			l.next()
+			tk = TkMul
+			return
+		case '/': // '/'
+			l.next()
+			tk = TkDiv
+			return
+		case '^': // '^'
+			l.next()
+			tk = TkFac
+			return
+		case ',': // ','
+			l.next()
+			tk = TkComma
+			return
+		case ';': // ';'
+			l.next()
+			tk = TkSemicolon
+			return
+		case '=': // '='
+			l.next()
+			if !l.checkNext([]rune{'='}) {
 				tk = TkAssign
-			} else {
-				tk = TkEq
+				return
 			}
+			tk = TkEq
 			return
-		case '<':
+		case '<': // '<=', '<' , '<<'
 			l.next()
 			if l.checkNext([]rune{'='}) {
 				tk = TkLeq
-			} else if l.checkNext([]rune{'<'}) {
-				tk = TkLftShift
-			} else {
-				tk = TkLt
+				return
 			}
+			if l.checkNext([]rune{'<'}) {
+				tk = TkLeftShift
+				return
+			}
+			tk = TkLt
 			return
-		case '>':
+		case '>': // '>=', '>', '>>'
 			l.next()
-			if !l.checkNext([]rune{'='}) {
-				tk = TkGt
-			} else {
+			if l.checkNext([]rune{'='}) {
 				tk = TkGeq
+				return
 			}
+			if l.checkNext([]rune{'>'}) {
+				tk = TkRightShift
+				return
+			}
+			tk = TkGt
 			return
-		case '~':
+		case '~': // '~='
 			l.next()
-			if !l.checkNext([]rune{'='}) {
-
-			} else {
+			if l.checkNext([]rune{'='}) {
 				tk = TkNotEq
+				return
 			}
+			err = errUnexpectChar
 			return
 		case '"', '\'': // 短字符串常量
 			tk, err = l.readString(l.current)
 			return
-		case '.':
+		case '.': // '.', '..', '...'
 			l.next()
-			if l.current == '.' {
-				l.next()
-				if l.current == '.' {
-					l.next()
+			if l.checkNext([]rune{'.'}) {
+				if l.checkNext([]rune{'.'}) {
 					tk = TkDots
-				} else {
-					tk = TkConcat
+					return
 				}
-			} else {
-				tk = TkDot
+				tk = TkConcat
+				return
 			}
+			tk = TkDot
 			return
 		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 			tk, err = l.readNumeral()
 			return
-		case EOZ:
+		case EOZ: // 文件结尾
 			err = ErrEOZ
 			return
 		default: // 标识符或关键字
@@ -302,9 +342,9 @@ func (l *Lexer) parse() (tk int, err error) {
 			}
 			if tag, ok := gKeyWords[string(l.buf)]; ok {
 				tk = tag
-			} else {
-				tk = TkName
+				return
 			}
+			tk = TkName
 			return
 		}
 	}
@@ -318,28 +358,11 @@ func (l *Lexer) Token() (tk Token, err error) {
 	}
 
 	tk.Tag = tag
-	switch tag {
-	case TkName:
-		tk.Val = string(l.buf)
-	case TkAnd, TkBreak, TkDo, TkElse, TkElseif, TkEnd, TkFalse, TkFor, TkFunc, TkIf,
-		TkIn, TkLocal, TkNil, TkNot, TkOr, TkRepeat, TkRet, TkThen, TkTrue, TkUntil, TkWhile:
-		for k, v := range gKeyWords {
-			if v != tag {
-				continue
-			}
-			tk.Val = k
-		}
-	case TkString:
-		tk.Val = string(l.buf)
-	case TkDot:
-		tk.Val = "."
-	case TkConcat:
-		tk.Val = ".."
-	case TkDots:
-		tk.Val = "..."
-	case TkAssign:
-		tk.Val = "="
+	if val, ok := gTokenValues[tag]; ok {
+		tk.Val = val
+		return
 	}
 
+	tk.Val = string(l.buf)
 	return
 }
