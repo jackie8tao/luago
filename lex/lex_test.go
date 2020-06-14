@@ -3,7 +3,7 @@ package lex
 import "testing"
 
 func TestLexer_Token(t *testing.T) {
-	l := NewLexer("testdata/lex.lua")
+	l := NewLexer("_lua/lex.lua")
 	for {
 		tk, err := l.Token()
 		if err != nil {
