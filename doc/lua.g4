@@ -1,7 +1,7 @@
 grammar lua;
 
 chunk
-    : block EOF
+    : block
     ;
 
 block
@@ -14,16 +14,24 @@ stat
     | funcall
     | label
     | 'break'
-    | 'goto' NAME
+    | 'goto' Name
     | 'do' block 'end'
     | 'while' exp 'do' block 'end'
     | 'repeat' block 'until' exp
     | 'if' exp 'then' block ('elseif' exp 'then' block)* ('else' block)? 'end'
-    | 'for' NAME '=' exp ',' exp (',' exp)? 'do' block 'end'
+    | 'for' Name '=' exp ',' exp (',' exp)? 'do' block 'end'
     | 'for' namelist 'in' explist 'do' block 'end'
     | 'function' funcname funcbody
-    | 'local' 'function' NAME funcbody
-    | 'local' namelist ('=' explist)?
+    | 'local' 'function' Name funcbody
+    | 'local' attnamelist ('=' explist)?
+    ;
+
+attnamelist
+    : Name attrib (',' Name attrib)
+    ;
+
+attrib
+    : ('<' Name '>')
     ;
 
 retstat
@@ -31,53 +39,138 @@ retstat
     ;
 
 label
-    : '::' NAME '::'
+    : '::' Name '::'
     ;
 
 funcname
-    : NAME ('.' NAME)* (':' NAME)?
+    : Name ('.' Name)* (':' Name)?
     ;
 
 varlist
     : var (',' var)*
     ;
 
-var
-    : NAME
-    | prefixexp '[' exp ']'
-    | prefixexp '.' NAME
-    ;
-
 namelist
-    : NAME (',' NAME)*
+    : Name (',' Name)*
     ;
 
 explist
     : exp (',' exp)*
     ;
 
+value
+    : 'nil'
+    | 'false'
+    | 'true'
+    | Numberal
+    | LiteralString
+    | '...'
+    | funcdef
+    | var
+    | tableconstructor
+    | '(' exp ')'
+    ;
+
 exp
-    : nil
-    | false
-    | true
-    | NUMBER
-    | String
+    : value (binop exp)*
+    | unop exp
+    ;
+
+index
+    : '[' exp ']'
+    | '.' Name
+    ;
+
+call
+    : args
+    | ':' Name args
+    ;
+
+var
+    : Name
+    | prefix suffix* index
+    ;
+
+suffix
+    : index
+    | call
+    ;
+
+prefix
+    : '(' exp ')'
+    | Name
+    ;
+
+funcall
+    : prefix suffix* call
+    ;
+
+args
+    : '(' explist? ')'
+    | tableconstructor
+    | LiteralString
+    ;
+
+funcdef
+    : 'function' funcbody
+    ;
+
+funcbody
+    : '(' parlist* ')' block 'end'
+    ;
+
+parlist
+    : namelist (',' '...')?
     | '...'
     ;
 
-prefixexp
-    : Name prefixexp_suffix
-    | '(' exp ')' prefixexp_suffix
+tableconstructor
+    : '{' fieldlist? '}'
     ;
 
-prefixexp_tail
-    : '[' exp ']' prefixexp_tail
-    | '.' NAME prefixexp_tail
-    | args prefixexp_tail
-    | ':' NAME args prefixexp_tail
-    | /* epsilon */
+fieldlist
+    : field (fieldsep field)* fieldsep?
+    ;
+
+field
+    : '[' exp ']' '=' exp
+    | Name '=' exp
+    | exp
+    ;
+
+fieldsep
+    : ','
+    | ';'
+    ;
+
+binop
+    : '+'
+    | '-'
+    | '*'
+    | '/'
+    | '//'
+    | '^'
+    | '%'
+    | '&'
+    | '~'
+    | '|'
+    | '>>'
+    | '<<'
+    | '..'
+    | '<'
+    | '<='
+    | '>'
+    | '>='
+    | '=='
+    | '~='
+    | 'and'
+    | 'or'
     ;
 
 unop
     : '-'
     ;
+
+Name: [a-zA-Z];
+Numberal: [1-9];
+LiteralString: [a-zA-Z];
